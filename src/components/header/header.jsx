@@ -2,7 +2,8 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { GiFilmSpool } from "react-icons/gi";
-import { IoPerson } from "react-icons/io5";
+import { auth } from '../services/config';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 const HeaderContainer = styled.header`
   background-color: #000;
@@ -70,9 +71,53 @@ const StyledLink = styled(Link)`
   }
 `;
 
+const UserInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+`;
+
+const UserAvatar = styled.div`
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #ff6b08;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+`;
+
+const LogoutButton = styled.button`
+  background: none;
+  border: none;
+  color: #ff6b08;
+  cursor: pointer;
+  padding: 5px;
+  margin-left: 10px;
+  
+  &:hover {
+    color: #ff8533;
+  }
+`;
 
 const Header = () => {
   const location = useLocation();
+  const [user] = useAuthState(auth);
+
+  const handleLogout = () => {
+    auth.signOut();
+  };
+
+  const getInitials = (name) => {
+    return name
+      ? name.split(' ')
+          .map(word => word[0])
+          .join('')
+          .toUpperCase()
+      : '?';
+  };
 
   return (
     <HeaderContainer>
@@ -82,15 +127,29 @@ const Header = () => {
           MOVERISE
         </LogoLink>
         <NavList>
-        <li>
-            <StyledLink 
-              to="/login" 
-              className={location.pathname === '/about' ? 'active' : ''}
-            >
-                <IoPerson />
-                Login
-            </StyledLink>
-          </li>
+        {user ? (
+            <li>
+              <UserInfo>
+                <UserAvatar>
+                  {getInitials(user.displayName || user.email)}
+                </UserAvatar>
+                <span>{user.displayName || user.email.split('@')[0]}</span>
+                <LogoutButton onClick={handleLogout}>
+                 Logout
+                </LogoutButton>
+              </UserInfo>
+            </li>
+          ) : (
+            <li>
+              <StyledLink 
+                to="/login" 
+                className={location.pathname === '/login' ? 'active' : ''}
+              >
+                <GiFilmSpool />
+                LOGIN
+              </StyledLink>
+            </li>
+          )}
           <li>
             <StyledLink 
               to="/" 
