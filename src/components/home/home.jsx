@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { getPopularMovies } from '../services/movieApi';
 import Hero from '../hero/hero';
-
+import MovieModal from '../movieModal/movieModal';
 
 const HomeContainer = styled.div`
   max-width: 1200px;
@@ -65,11 +65,24 @@ const MovieGenre = styled.p`
   color: #ff6b08;
 `;
 
+const MovieRating = styled.div`
+    margin: 15px;
+    position: absolute;
+    display: inline-block;
+    background: linear-gradient(to left, #ff6b08, rgba(0, 0, 0, 0.1));
+    color: white;
+    padding: 30px 20px;
+    border-radius: 50%;
+    font-size: 20px;
+    font-weight: 900;
+`;
 
-const Home = () => {
+
+const Home = ({user}) => {
     const [movies, setMovies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [selectedMovie, setSelectedMovie] = useState(null)
 
     useEffect(() => {
         const fetchMovies = async () => {
@@ -106,6 +119,10 @@ const Home = () => {
         if (error) {
             return <div>{error}</div>;
         }
+
+  const handleMovieClick = (movie) => {
+    setSelectedMovie(movie);
+  }
   return (
     <>
    <Hero onSearch={handleSearch} />
@@ -113,7 +130,11 @@ const Home = () => {
                 <MovieGrid>
                     {movies && movies.length > 0 ? (
                         movies.map(movie => (
-                            <MovieCard key={movie.id}>
+                            <MovieCard 
+                            key={movie.id}
+                              onClick={() => handleMovieClick(movie)}
+                              >
+                               <MovieRating>★ {movie.vote_average.toFixed(1)}</MovieRating>
                                 <MovieImage 
                                     src={movie.poster_path 
                                         ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
@@ -135,6 +156,14 @@ const Home = () => {
                     )}
                 </MovieGrid>
             </HomeContainer>
+
+            {selectedMovie && (
+                <MovieModal 
+                    movie={selectedMovie} 
+                    onClose={() => setSelectedMovie(null)} 
+                    user={user}
+                />
+            )}
     </>
   );
 };

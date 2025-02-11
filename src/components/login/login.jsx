@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
-import { auth } from '../services/config';
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword,
-  GoogleAuthProvider,
-  signInWithPopup
-} from 'firebase/auth';
 
+
+import styled from 'styled-components';
+
+import handleGoogleLogin from './handGooglelogin';
+import handleSubmit from './handleSubmit';
 import { FcGoogle } from 'react-icons/fc';
 
 
@@ -108,7 +105,7 @@ const ToggleButton = styled.button`
 `;
 
 const Login = () => {
-  const [isLogin, setIsLogin] = useState(true);
+    const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -117,71 +114,27 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage({ text: '', type: '' });
-
-    try {
-      if (isLogin) {
-        // Вход
-        await signInWithEmailAndPassword(auth, formData.email, formData.password);
-        setMessage({ text: 'Successful login!', type: 'success' });
-        setTimeout(() => navigate('/'), 1500);
-      } else {
-        // Регистрация
-        try {
-          await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-          setMessage({ text: 'Registration successful!', type: 'success' });
-          setTimeout(() => navigate('/'), 1500);
-        } catch (error) {
-          if (error.code === 'auth/email-already-in-use') {
-            setMessage({ text: 'A user with this email already exists', type: 'error' });
-          } else {
-            throw error;
-          }
-        }
-      }
-    } catch (error) {
-      switch (error.code) {
-        case 'auth/wrong-password':
-          setMessage({ text: 'Incorrect password!', type: 'error' });
-          break;
-        case 'auth/user-not-found':
-          setMessage({ text: 'User not found!', type: 'error' });
-          break;
-        case 'auth/invalid-email':
-          setMessage({ text: 'Incorrect email!', type: 'error' });
-          break;
-        case 'auth/weak-password':
-          setMessage({ text: 'Password must be at least 6 characters!', type: 'error' });
-          break;
-        default:
-          setMessage({ text: 'An error has occurred. Please try again later!', type: 'error' });
-      }
-    } finally {
-      setLoading(false);
-    }
+  const handleSubmitForm = (e) => {
+    handleSubmit({ 
+      e, 
+      isLogin, 
+      formData: {
+        email: formData.email.trim(),
+        password: formData.password
+      }, 
+      setLoading, 
+      setMessage, 
+      navigate 
+    });
   };
-
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      setMessage({ text: 'Successful login via Google!', type: 'success' });
-      setTimeout(() => navigate('/'), 1500);
-    } catch (error) {
-      setMessage({ text: 'Google login error!', type: 'error' });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const handleGoogleLoginClick = () => {
+    handleGoogleLogin({ setLoading, setMessage, navigate });
+  }
 
   return (
     <LoginContainer>
       <h2>{isLogin ? 'Login' : 'Sing Up'}</h2>
-      <Form onSubmit={handleSubmit}>
+      <Form onSubmit={handleSubmitForm}>
         <Input
           type="email"
           placeholder="Email"
@@ -199,7 +152,7 @@ const Login = () => {
         <Button type="submit" disabled={loading}>
           {loading ? 'Loading...' : isLogin ? 'Login' : 'Sing up'}
         </Button>
-        <GoogleButton type="button" onClick={handleGoogleLogin} disabled={loading}>
+        <GoogleButton type="button" onClick={handleGoogleLoginClick} disabled={loading}>
           <FcGoogle size={20} />
           Login with Google
         </GoogleButton>

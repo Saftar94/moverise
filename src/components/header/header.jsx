@@ -160,8 +160,8 @@ const Header = () => {
           </li>
           <li>
             <StyledLink 
-              to="/contacts" 
-              className={location.pathname === '/contacts' ? 'active' : ''}
+              to="/library" 
+              className={location.pathname === '/library' ? 'active' : ''}
             >
               MY LIBRARY
             </StyledLink>
