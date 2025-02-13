@@ -2,8 +2,9 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { GiFilmSpool } from "react-icons/gi";
-import { auth } from '../services/config';
+import { auth } from '../services/firebaseConfig';
 import { useAuthState } from 'react-firebase-hooks/auth';
+// import Hero from '../hero/hero';
 
 const HeaderContainer = styled.header`
   background-color: #000;
@@ -107,8 +108,11 @@ const Header = () => {
   const [user] = useAuthState(auth);
 
   const handleLogout = () => {
+    localStorage.removeItem(`userLibrary_${user.uid}`);
     auth.signOut();
   };
+
+  
 
   const getInitials = (name) => {
     return name
@@ -168,6 +172,9 @@ const Header = () => {
           </li>
         </NavList>
       </Nav>
+
+      {/* <Hero onSearch={handleSearch} /> */}
+
     </HeaderContainer>
   );
 };

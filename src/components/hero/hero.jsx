@@ -8,7 +8,7 @@ const HeroSection = styled.section`
               url('https://image.tmdb.org/t/p/original/wwemzKWzjKYJFfCeiB57q3r4Bcm.jpg');
   background-size: cover;
   background-position: center;
-  height: 400px;
+  height: 200px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -79,19 +79,19 @@ const Hero = ({ onSearch }) => {
     }
 
     try {
-        const data = await searchMovies(searchQuery); 
-        
-        if (data.results.length === 0) {
-          setError(`The search didn't yield any results!`);
-          onSearch([]);
-        } else {
-          setError('');
-          onSearch(data.results);
-        }
-      } catch (error) {
-        console.error('Search error:', error);
-        setError('An error occurred during the search. Try again later.');
+      const data = await searchMovies(searchQuery); 
+      
+      if (data.results.length === 0) {
+        setError(`The search didn't yield any results!`);
+        onSearch([]);
+      } else {
+        setError('');
+        onSearch(data.results);
       }
+    } catch (error) {
+      console.error('Search error:', error);
+      setError('An error occurred during the search. Try again later.');
+    }
   };
 
   return (
@@ -101,12 +101,12 @@ const Hero = ({ onSearch }) => {
         <form onSubmit={handleSearch}>
           <SearchInput
             type="text"
-            placeholder="Film Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search films..."
           />
           <SearchButton type="submit">
-            <span role="img" aria-label="search"><FaSearch /></span>
+            <FaSearch />
           </SearchButton>
         </form>
       </SearchContainer>

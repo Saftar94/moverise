@@ -84,6 +84,12 @@ const Home = ({user}) => {
     const [error, setError] = useState(null);
     const [selectedMovie, setSelectedMovie] = useState(null)
 
+    const handleSearch = (searchResults) => {
+        if (Array.isArray(searchResults)) {
+            setMovies(searchResults);
+        }
+    };
+
     useEffect(() => {
         const fetchMovies = async () => {
             try {
@@ -104,13 +110,6 @@ const Home = ({user}) => {
 
 
     }, []);
-
-    
-    const handleSearch = (searchResults) => {
-        if (Array.isArray(searchResults)) {
-            setMovies(searchResults);
-        }
-        }
 
         if (loading){
             return <div>Loading...</div>

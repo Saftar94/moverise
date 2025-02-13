@@ -1,29 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { db } from '../services/config';
-import { collection, query, where, onSnapshot, deleteDoc, doc  } from 'firebase/firestore';
+import { db } from '../services/firebaseConfig';
+import {  collection, onSnapshot } from 'firebase/firestore';
+import DeleteButton from '../libararyButtons/DeleteButton';
 
-const DeleteButton = styled.button`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background-color: rgba(255, 0, 0, 0.7);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s;
-
-  &:hover {
-    background-color: red;
-  }
-`;
 
 const LibraryContainer = styled.div`
   max-width: 1200px;
@@ -82,58 +62,107 @@ const FilterButton = styled.button`
   }
 `;
 
+const EmptyMessage = styled.div`
+  text-align: center;
+  color: white;
+  margin-top: 20px;
+  font-size: 18px;
+`;
+
+
+const EmptyLibraryMessage = styled.div`
+  text-align: center;
+  color: white;
+  font-size: 24px;
+  margin-top: 50px;
+  padding: 20px;
+  background: #ff6b08;
+  border-radius: 8px;
+`;
+
+
 const MyLibrary = ({ user }) => {
   const [movies, setMovies] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleDelete = async (movieId) => {
-    try {
-      const movieRef = doc(db, 'users', user.uid, 'library', movieId.toString());
-      await deleteDoc(movieRef);
-      console.log('Movie deleted successfully');
-    } catch (error) {
-      console.error('Error deleting movie:', error);
-    }
-  };
 
   useEffect(() => {
-    if (!user) {
-      setMovies([]);
-      setLoading(false);
-      return;
-    }
+    let unsubscribe = null;
 
-    // Создаем слушатель изменений
-    const libraryRef = collection(db, 'users', user.uid, 'library');
-    let q = libraryRef;
+    const fetchLibrary = async () => {
+      if (!user) {
+        setMovies([]);
+        setLoading(false);
+        return;
+      }
+      const cachedData = localStorage.getItem(`userLibrary_${user.uid}`);
+      if (cachedData) {
+        setMovies(JSON.parse(cachedData));
+        setLoading(false);
+      }
 
-    if (filter !== 'all') {
-      q = query(libraryRef, where('type', '==', filter));
-    }
+      try {
+        const libraryRef = collection(db, 'users', user.uid, 'library');
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const moviesList = [];
-      snapshot.forEach((doc) => {
-        moviesList.push({ id: doc.id, ...doc.data() });
-      });
-      setMovies(moviesList);
-      setLoading(false);
-    }, (error) => {
-      console.error("Error fetching library:", error);
-      setLoading(false);
-    });
+        unsubscribe = onSnapshot(
+          libraryRef,
+          (snapshot) => {
+            const moviesList = snapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data()
+            }));
+            
+            setMovies(moviesList);
+            setLoading(false);
+            setError(null);
+            
+            localStorage.setItem(`userLibrary_${user.uid}`, JSON.stringify(moviesList));
+          },
+          (error) => {
+            console.error("Error loading library:", error);
+            setError(error.message);
+            setLoading(false);
 
-    return () => unsubscribe();
-  }, [user, filter]);
+            const cachedData = localStorage.getItem(`userLibrary_${user.uid}`);
+            if (cachedData) {
+              setMovies(JSON.parse(cachedData));
+            }
+          }
+        );
+      } catch (error) {
+        console.error("Error setting up listener:", error);
+        setError(error.message);
+        setLoading(false);
+      }
+    };
 
-//   if (loading) {
-//     return <div>Loading...</div>;
-//   }
+    fetchLibrary();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [user]);
+
+ 
+
+  const handleMovieDelete = (movieId) => {
+    setMovies(prevMovies => prevMovies.filter(movie => movie.id !== movieId));
+  };
+
+    const filteredMovies = filter === 'all' 
+    ? movies 
+    : movies.filter(movie => movie.type === filter);
 
   if (!user) {
-    return <div>Please login to view your library</div>;
+    return <EmptyMessage>
+        Please login to view your library
+        </EmptyMessage>;
   }
+
 
   return (
     <LibraryContainer>
@@ -158,31 +187,49 @@ const MyLibrary = ({ user }) => {
         </FilterButton>
       </FilterButtons>
 
-      <MovieGrid>
-        {movies.map(movie => (
-          <MovieCard key={movie.id} type={movie.type}>
-               <DeleteButton onClick={() => handleDelete(movie.id)}>
-              ×HELLO
-            </DeleteButton>
-            <MovieImage 
-              src={
-                movie.poster_path
-                  ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                  : 'https://via.placeholder.com/500x750?text=No+Image'
-              } 
-              alt={movie.title} 
+      {loading ? (
+        <EmptyLibraryMessage>Loading your library...</EmptyLibraryMessage>
+      ) : error ? (
+        <EmptyLibraryMessage>Error: {error}</EmptyLibraryMessage>
+      ) : filteredMovies.length === 0 ? (
+        <EmptyLibraryMessage>
+          {filter === 'all' 
+            ? 'Your library is empty. Add some movies!' 
+            : `No ${filter} movies in your library`}
+        </EmptyLibraryMessage>
+      ) : (
+        <>
+          <MovieGrid>
+            {filteredMovies.map(movie => (
+              <MovieCard key={movie.id} type={movie.type}>
+                   <DeleteButton 
+              movieId={movie.id}
+              user={user}
+              onDelete={handleMovieDelete}
             />
-            <MovieInfo>
-              <MovieTitle>{movie.title}</MovieTitle>
-            </MovieInfo>
-          </MovieCard>
-        ))}
-      </MovieGrid>
+                <MovieImage 
+                  src={
+                    movie.poster_path
+                      ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+                      : 'https://via.placeholder.com/500x750?text=No+Image'
+                  } 
+                  alt={movie.title} 
+                />
+                <MovieInfo>
+                  <MovieTitle>{movie.title}</MovieTitle>
+                </MovieInfo>
+              </MovieCard>
+            ))}
+          </MovieGrid>
 
-      {movies.length === 0 && (
-        <div style={{ textAlign: 'center', color: 'white', marginTop: '20px' }}>
-          No movies in your library
-        </div>
+          {!loading && filteredMovies.length === 0 && (
+            <EmptyMessage>
+              {filter === 'all' 
+                ? 'No movies in your library yet. Add some movies!' 
+                : `No ${filter} movies in your library`}
+            </EmptyMessage>
+          )}
+        </>
       )}
     </LibraryContainer>
   );

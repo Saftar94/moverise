@@ -3,7 +3,7 @@ import {
     signInWithPopup,
 } from 'firebase/auth';
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
-import { auth } from '../services/config';
+import { auth } from '../services/firebaseConfig';
 
 const handleGoogleLogin = async ({ setLoading, setMessage }) => {
   setLoading(true);
