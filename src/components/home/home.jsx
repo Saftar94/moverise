@@ -205,6 +205,8 @@ useEffect(() => {
   const handleMovieClick = (movie) => {
     setSelectedMovie(movie);
   }
+
+  const fallbackImageUrl = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='750' viewBox='0 0 500 750'%3E%3Crect width='100%25' height='100%25' fill='%23333'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24' fill='%23666'%3ENo Image%3C/text%3E%3C/svg%3E";
   return (
     <>
    <Hero />
@@ -231,7 +233,7 @@ useEffect(() => {
                 <MovieImage 
                   src={movie.poster_path 
                     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                    : 'https://via.placeholder.com/500x750?text=No+Image'
+                      : fallbackImageUrl
                   } 
                   alt={movie.title} 
                 />

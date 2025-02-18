@@ -13,14 +13,23 @@ const firebaseConfig = {
   };
   
   const app = initializeApp(firebaseConfig);
-   const auth = getAuth(app);
-  setPersistence(auth, browserLocalPersistence);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
- const db = getFirestore(app);
-enableIndexedDbPersistence(db).catch((err) => {
-  if (err.code === 'failed-precondition') {
-  } else if (err.code === 'unimplemented') {
-  }
-});
 export  {auth, db}
+
 export default app;
+setPersistence(auth, browserLocalPersistence)
+  .catch((error) => {
+    console.error("Auth persistence error:", error);
+  });
+
+enableIndexedDbPersistence(db)
+  .catch((err) => {
+    if (err.code === 'failed-precondition') {
+      console.log('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+    } else if (err.code === 'unimplemented') {
+      console.log('The current browser does not support persistence.');
+    }
+  });
+

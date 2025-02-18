@@ -36,7 +36,7 @@ function App() {
   const handleSearch = async (query) => {
     if(!query  || query.trim() === '') {
       setMovies(null);
-      setLibrarySearchResults(null); // Сбрасываем результаты поиска в библиотеке
+      setLibrarySearchResults(null); 
       return;
     }
   
@@ -54,15 +54,14 @@ function App() {
       }
     }
   else if (location.pathname === "/library") {
-    setIsSearching(true); // Устанавливаем флаг поиска
+    setIsSearching(true); 
       
-    // Поиск среди фильмов в библиотеке пользователя
     const filteredMovies = libraryMovies.filter(movie =>
       movie.title.toLowerCase().includes(query.toLowerCase())
     );
     
     if (filteredMovies.length === 0) {
-      setLibrarySearchResults([]); // Пустой массив для "поиск не дал результата"
+      setLibrarySearchResults([]); 
     } else {
       setLibrarySearchResults(filteredMovies);
     }

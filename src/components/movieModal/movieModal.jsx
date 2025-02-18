@@ -29,18 +29,23 @@ const ModalContent = styled.div`
 `;
 
 const CloseButton = styled.button`
-  position: absolute;
+   position: absolute;
   top: 10px;
   right: 10px;
-  background: none;
-  border: none;
+  background-color: #ff6b08;
   color: white;
-  font-size: 24px;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
   cursor: pointer;
-  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s ease;
 
   &:hover {
-    color: #ff6b08;
+    background-color: red;
   }
 `;
 
@@ -100,8 +105,6 @@ const Overview = styled.p`
 `;
 
 const MovieModal = ({ movie, onClose, user }) => {
-  console.log('Modal user:', user); // Отладочный лог
-  console.log('Modal movie:', movie);
   if (!movie) return null;
 
   // Предотвращаем всплытие клика по контенту

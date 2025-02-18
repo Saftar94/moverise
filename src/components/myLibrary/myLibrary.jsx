@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { db } from '../services/firebaseConfig';
+import { db,  } from '../services/firebaseConfig';
 import { collection, onSnapshot } from 'firebase/firestore';
 import DeleteButton from '../libararyButtons/DeleteButton';
 
@@ -113,7 +113,7 @@ const FilterButton = styled.button`
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  background-color: ${props => props.active ? '#ff6b08' : '#333'};
+  background-color: ${props => props.$active ? '#ff6b08' : '#333'};
   color: white;
   font-size: 14px;
 
@@ -244,24 +244,23 @@ const MyLibrary = ({ user, moviesLibr: librarySearchResults, isSearching }) => {
   };
 
 
-console.log("elps",librarySearchResults);
   return (
     <LibraryContainer>
       <FilterButtons>
         <FilterButton 
-          active={filter === 'all'} 
+          $active={filter === 'all'} 
           onClick={() => setFilter('all')}
         >
           All Movies
         </FilterButton>
         <FilterButton 
-          active={filter === 'watched'} 
+          $active={filter === 'watched'} 
           onClick={() => setFilter('watched')}
         >
           Watched
         </FilterButton>
         <FilterButton 
-          active={filter === 'future'} 
+          $active={filter === 'future'} 
           onClick={() => setFilter('future')}
         >
           Watch Later

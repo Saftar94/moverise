@@ -14,8 +14,8 @@ const PageButton = styled.button`
   padding: 8px 12px;
   border: none;
   border-radius: 4px;
-  background: ${props => props.active ? '#ff6b08' : 'transparent'};
-  color: ${props => props.active ? 'white' : '#ff6b08'};
+  background: ${props => props.$active ? '#ff6b08' : 'transparent'};
+  color: ${props => props.$active ? 'white' : '#ff6b08'};
   cursor: pointer;
   transition: all 0.3s ease;
   border: 1px solid #ff6b08;
@@ -97,7 +97,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
         ) : (
           <PageButton
             key={page}
-            active={page === currentPage}
+            $active={page === currentPage}
             onClick={() => handlePageClick(page)}
           >
             {page}
