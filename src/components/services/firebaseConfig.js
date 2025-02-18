@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth,setPersistence,browserLocalPersistence } from "firebase/auth";
 import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
+
 const firebaseConfig = {
     apiKey: "AIzaSyBQj9JEX9s-wwBvqKq95N-tvTzrS1dYGM0",
     authDomain: "moverise-7975c.firebaseapp.com",
@@ -16,7 +17,6 @@ const firebaseConfig = {
   setPersistence(auth, browserLocalPersistence);
 
  const db = getFirestore(app);
-
 enableIndexedDbPersistence(db).catch((err) => {
   if (err.code === 'failed-precondition') {
     console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
@@ -26,4 +26,3 @@ enableIndexedDbPersistence(db).catch((err) => {
 });
 export  {auth, db}
 export default app;
-//   export const auth = getAuth(app);

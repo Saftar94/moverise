@@ -4,46 +4,86 @@ import { getFirestore, doc, setDoc } from 'firebase/firestore';
 
 const ButtonContainer = styled.div`
   display: flex;
-  gap: 10px;
-  margin-top: 20px;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+
+  @media (min-width: 768px) {
+    max-width: 400px;
+    gap: 12px;
+    margin-top: 15px;
+  }
+
+  @media (min-width: 1024px) {
+    flex-direction: row;
+    max-width: 600px;
+    gap: 15px;
+    margin-top: 20px;
+  }
 `;
 
 const Button = styled.button`
-  padding: 10px 20px;
+  width: 100%;
+  padding: 10px 15px;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
+  font-size: 14px;
   transition: all 0.3s ease;
   
   &:disabled {
-    // opacity: 0.5;
+    opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  @media (min-width: 768px) {
+    padding: 12px 20px;
+    font-size: 15px;
+  }
+
+  @media (min-width: 1024px) {
+    padding: 12px 25px;
+    font-size: 16px;
   }
 `;
 
 const WatchedButton = styled(Button)`
-  background-color:rgb(255, 21, 21);
+  background-color: rgb(255, 21, 21);
   color: white;
   
-  &:hover {
-    background-color:rgb(255, 104, 172);
+  &:hover:not(:disabled) {
+    background-color: rgb(255, 104, 172);
   }
 `;
 
 const FutureButton = styled(Button)`
-  background-color:rgb(30, 208, 60);
+  background-color: rgb(30, 208, 60);
   color: white;
   
-  &:hover {
-    background-color:rgb(193, 193, 65);
+  &:hover:not(:disabled) {
+    background-color: rgb(193, 193, 65);
   }
 `;
 
 const Message = styled.div`
-  margin-top: 10px;
+  margin-top: 8px;
   color: ${props => props.type === 'error' ? '#ff6b6b' : '#51cf66'};
-  font-size: 14px;
+  font-size: 12px;
+  text-align: center;
+
+  @media (min-width: 768px) {
+    margin-top: 10px;
+    font-size: 13px;
+  }
+
+  @media (min-width: 1024px) {
+    margin-top: 12px;
+    font-size: 14px;
+  }
 `;
 
 const LibraryButtons = ({ movie, user, onUpdate }) => {
@@ -56,7 +96,6 @@ const LibraryButtons = ({ movie, user, onUpdate }) => {
         setMessageType('error');
         return;
       }
-      console.log('Adding to library:', { movie, user, type });
 
   
       try {
@@ -74,9 +113,7 @@ const LibraryButtons = ({ movie, user, onUpdate }) => {
           addedAt: new Date().toISOString()
         });
 
-        console.log('Saving movie data:', setDoc);
         await setDoc(movieRef, `setDoc`);
-        console.log('Successfully saved to Firestore')
 
         setMessage(`Successfully added to ${type} list!`);
         setMessageType('success');
@@ -85,7 +122,6 @@ const LibraryButtons = ({ movie, user, onUpdate }) => {
           onUpdate();
         }
       } catch (error) {
-        console.error('Error adding movie:', error);
         setMessage('Error adding movie to library');
         setMessageType('error');
       }

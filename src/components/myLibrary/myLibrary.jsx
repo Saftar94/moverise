@@ -1,92 +1,170 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { db } from '../services/firebaseConfig';
-import {  collection, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot } from 'firebase/firestore';
 import DeleteButton from '../libararyButtons/DeleteButton';
 
-
 const LibraryContainer = styled.div`
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 20px;
+  padding: 10px;
+
+  @media (min-width: 768px) {
+    max-width: 768px;
+    padding: 15px;
+  }
+
+  @media (min-width: 1024px) {
+    max-width: 1200px;
+    padding: 20px;
+  }
 `;
 
 const MovieGrid = styled.div`
   display: grid;
-  gap: 20px;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+
+  @media (min-width: 768px) {
+    gap: 15px;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+
+  @media (min-width: 1024px) {
+    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
 `;
 
 const MovieCard = styled.div`
   position: relative;
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
   background-color: ${props => 
     props.type === 'watched' ? 'rgba(255, 107, 107, 0.2)' : 
     props.type === 'future' ? 'rgba(81, 207, 102, 0.2)' : 'transparent'};
+
+  @media (min-width: 768px) {
+    border-radius: 8px;
+  }
 `;
 
 const MovieImage = styled.img`
   width: 100%;
-  height: 300px;
+  height: 200px;
   object-fit: cover;
+
+  @media (min-width: 768px) {
+    height: 250px;
+  }
+
+  @media (min-width: 1024px) {
+    height: 300px;
+  }
 `;
 
 const MovieInfo = styled.div`
-  padding: 10px;
+  padding: 8px;
   color: white;
+
+  @media (min-width: 768px) {
+    padding: 10px;
+  }
+
+  @media (min-width: 1024px) {
+    padding: 10px;
+  }
 `;
 
 const MovieTitle = styled.h3`
   margin: 0;
-  font-size: 16px;
+  font-size: 14px;
+
+  @media (min-width: 768px) {
+    font-size: 15px;
+  }
+
+  @media (min-width: 1024px) {
+    font-size: 16px;
+  }
 `;
 
 const FilterButtons = styled.div`
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 15px;
   justify-content: center;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  @media (min-width: 1024px) {
+    gap: 10px;
+    margin-bottom: 20px;
+  }
 `;
 
 const FilterButton = styled.button`
-  padding: 10px 20px;
+  padding: 8px 15px;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
   cursor: pointer;
   background-color: ${props => props.active ? '#ff6b08' : '#333'};
   color: white;
+  font-size: 14px;
+
+  @media (min-width: 768px) {
+    padding: 10px 20px;
+    font-size: 15px;
+  }
+
+  @media (min-width: 1024px) {
+    padding: 10px 20px;
+    font-size: 16px;
+  }
 
   &:hover {
     background-color: #ff6b08;
   }
 `;
 
-const EmptyMessage = styled.div`
-  text-align: center;
-  color: white;
-  margin-top: 20px;
-  font-size: 18px;
-`;
-
-
 const EmptyLibraryMessage = styled.div`
   text-align: center;
-  color: white;
-  font-size: 24px;
-  margin-top: 50px;
-  padding: 20px;
-  background: #ff6b08;
-  border-radius: 8px;
+  padding: 15px;
+  color: rgb(255, 94, 0);
+  background-color: rgb(0, 0, 0);
+  font-weight: 700;
+  font-size: 20px;
+  width: 100%;
+  height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  @media (min-width: 768px) {
+    padding: 20px;
+    font-size: 28px;
+    height: 90px;
+  }
+
+  @media (min-width: 1024px) {
+    font-size: 34px;
+    height: 100px;
+  }
 `;
-
-
-const MyLibrary = ({ user }) => {
-  const [movies, setMovies] = useState([]);
+const MyLibrary = ({ user, moviesLibr: librarySearchResults, isSearching }) => {
+  const [movies, setMovies] = useState();
+  const [filteredMovies, setFilteredMovies] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  
+console.log("myLibrary",movies);
 
   useEffect(() => {
     let unsubscribe = null;
@@ -97,6 +175,7 @@ const MyLibrary = ({ user }) => {
         setLoading(false);
         return;
       }
+
       const cachedData = localStorage.getItem(`userLibrary_${user.uid}`);
       if (cachedData) {
         setMovies(JSON.parse(cachedData));
@@ -121,7 +200,6 @@ const MyLibrary = ({ user }) => {
             localStorage.setItem(`userLibrary_${user.uid}`, JSON.stringify(moviesList));
           },
           (error) => {
-            console.error("Error loading library:", error);
             setError(error.message);
             setLoading(false);
 
@@ -132,7 +210,6 @@ const MyLibrary = ({ user }) => {
           }
         );
       } catch (error) {
-        console.error("Error setting up listener:", error);
         setError(error.message);
         setLoading(false);
       }
@@ -147,23 +224,29 @@ const MyLibrary = ({ user }) => {
     };
   }, [user]);
 
- 
-
+  useEffect(() => {
+    if (librarySearchResults === null) {
+      // Если поиск не выполнялся или был очищен
+      const finalFilteredMovies = filter === 'all' 
+        ? movies 
+        : movies.filter(movie => movie.type === filter);
+      setFilteredMovies(finalFilteredMovies);
+    } else if (Array.isArray(librarySearchResults) && librarySearchResults.length === 0) {
+      setFilteredMovies([]);
+    } else {
+      const finalFilteredMovies = filter === 'all' 
+        ? librarySearchResults 
+        : librarySearchResults.filter(movie => movie.type === filter);
+      setFilteredMovies(finalFilteredMovies);
+    }
+  }, [librarySearchResults, movies, filter]);
+  
   const handleMovieDelete = (movieId) => {
     setMovies(prevMovies => prevMovies.filter(movie => movie.id !== movieId));
   };
 
-    const filteredMovies = filter === 'all' 
-    ? movies 
-    : movies.filter(movie => movie.type === filter);
 
-  if (!user) {
-    return <EmptyMessage>
-        Please login to view your library
-        </EmptyMessage>;
-  }
-
-
+console.log("elps",librarySearchResults);
   return (
     <LibraryContainer>
       <FilterButtons>
@@ -187,26 +270,30 @@ const MyLibrary = ({ user }) => {
         </FilterButton>
       </FilterButtons>
 
+    
+
+  
       {loading ? (
         <EmptyLibraryMessage>Loading your library...</EmptyLibraryMessage>
       ) : error ? (
         <EmptyLibraryMessage>Error: {error}</EmptyLibraryMessage>
-      ) : filteredMovies.length === 0 ? (
+      ) : librarySearchResults.length === 0 ? (
         <EmptyLibraryMessage>
-          {filter === 'all' 
-            ? 'Your library is empty. Add some movies!' 
-            : `No ${filter} movies in your library`}
+          {isSearching  ?
+            `The search didn't turn up any results!` : 
+            'Your library is empty. Add some movies!'
+          }
         </EmptyLibraryMessage>
       ) : (
         <>
           <MovieGrid>
             {filteredMovies.map(movie => (
               <MovieCard key={movie.id} type={movie.type}>
-                   <DeleteButton 
-              movieId={movie.id}
-              user={user}
-              onDelete={handleMovieDelete}
-            />
+                <DeleteButton 
+                  movieId={movie.id}
+                  user={user}
+                  onDelete={handleMovieDelete}
+                />
                 <MovieImage 
                   src={
                     movie.poster_path
@@ -221,14 +308,6 @@ const MyLibrary = ({ user }) => {
               </MovieCard>
             ))}
           </MovieGrid>
-
-          {!loading && filteredMovies.length === 0 && (
-            <EmptyMessage>
-              {filter === 'all' 
-                ? 'No movies in your library yet. Add some movies!' 
-                : `No ${filter} movies in your library`}
-            </EmptyMessage>
-          )}
         </>
       )}
     </LibraryContainer>
@@ -236,3 +315,4 @@ const MyLibrary = ({ user }) => {
 };
 
 export default MyLibrary;
+

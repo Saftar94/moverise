@@ -1,9 +1,11 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { getPopularMovies } from '../services/movieApi';
+import { getPopularMovies, getGenres, getMovies, getPaginationMovies } from '../services/movieApi';
 import Hero from '../hero/hero';
 import MovieModal from '../movieModal/movieModal';
+import Sorting from '../sorting/sorting';
+import Pagination from '../pagination/pagination';
 
 const HomeContainer = styled.div`
   max-width: 1200px;
@@ -77,39 +79,120 @@ const MovieRating = styled.div`
     font-weight: 900;
 `;
 
+export const EmptyLibraryMessage = styled.div`
+  text-align: center;
+  padding: 20px;
+  color:rgb(255, 94, 0);
+  background-color:rgb(0, 0, 0) ;
+  font-weight: 700;
+  justify-content: center;
+  text-align: center;
+  align-items: center;
+  display: flex;
+  font-size: 34px;
+  width: 100%;
+  height: 100px;
+`;
 
-const Home = ({user}) => {
-    const [movies, setMovies] = useState([]);
+const Home = ({user, movies}) => {
+  const [localMovies, setLocalMovies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedMovie, setSelectedMovie] = useState(null)
+    const [genres, setGenres] = useState([]);
+    const [sortingCriteria, setSortingCriteria] = useState({
+      genre: '',
+      year: '',
+      sortBy: 'popularity.desc'
+    });
+    const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-    const handleSearch = (searchResults) => {
-        if (Array.isArray(searchResults)) {
-            setMovies(searchResults);
-        }
+
+  useEffect(() => {
+    const fetchMovies = async () => {
+      try {
+        const data = await getPaginationMovies(currentPage);
+        setLocalMovies(data.results);
+        setTotalPages(data.total_pages);
+      } catch (error) {
+        console.error('Error fetching movies:', error);
+      }
     };
 
+    fetchMovies();
+  }, [currentPage]);
+
+
+
     useEffect(() => {
-        const fetchMovies = async () => {
-            try {
-                const data = await getPopularMovies();
-                if (data && data.results) {
-                    setMovies(data.results);
-                } else {
-                    setError('Failed to load data');
-                }
-            } catch (error) {
-                console.error('Error fetching movies:', error);
-                setError('An error occurred while downloading films');
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchMovies();
-
-
+      const fetchGenres = async () => {
+        try {
+          const genresData = await getGenres();
+          setGenres(genresData.genres);
+        } catch (error) {
+          console.error('Error fetching genres:', error);
+        }
+      };
+      fetchGenres();
     }, []);
+  
+    useEffect(() => {
+      const fetchMovies = async () => {
+        try {
+          const data = await getMovies({
+            genre: sortingCriteria.genre,
+            year: sortingCriteria.year,
+            sortBy: sortingCriteria.sortBy
+          });
+          setLocalMovies(data.results);
+        } catch (error) {
+          console.error('Error fetching movies:', error);
+        }
+      };
+  
+      fetchMovies();
+    }, [sortingCriteria]);
+  
+    const handleSortChange = (type, value) => {
+      setSortingCriteria(prev => ({
+        ...prev,
+        [type]: value
+      }));
+      setCurrentPage(1);
+    };
+  
+    const handlePageChange = (page) => {
+      setCurrentPage(page);
+    };
+
+useEffect(() => {
+  const loadMovies = async () => {
+    try {
+      setLoading(true);
+      
+      if (Array.isArray(movies)) {
+        setLocalMovies(movies);
+        setLoading(false);
+        return;
+      }
+
+      const data = await getPopularMovies();
+      if (data && data.results) {
+        setLocalMovies(data.results);
+      } else {
+        setError('Failed to load data');
+      }
+    } catch (error) {
+      console.error('Error fetching movies:', error);
+      setError('An error occurred while downloading films');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  loadMovies();
+}, [movies]); 
 
         if (loading){
             return <div>Loading...</div>
@@ -124,36 +207,52 @@ const Home = ({user}) => {
   }
   return (
     <>
-   <Hero onSearch={handleSearch} />
+   <Hero />
+
+   <Sorting 
+        onSortChange={handleSortChange}
+        genres={genres}
+      />
             <HomeContainer>
-                <MovieGrid>
-                    {movies && movies.length > 0 ? (
-                        movies.map(movie => (
-                            <MovieCard 
-                            key={movie.id}
-                              onClick={() => handleMovieClick(movie)}
-                              >
-                               <MovieRating>★ {movie.vote_average.toFixed(1)}</MovieRating>
-                                <MovieImage 
-                                    src={movie.poster_path 
-                                        ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                                        : 'https://via.placeholder.com/500x750?text=No+Image'} 
-                                    alt={movie.title} 
-                                />
-                                <MovieInfo>
-                                    <MovieTitle>{movie.title}</MovieTitle>
-                                    <MovieGenre>
-                                        {movie.release_date 
-                                            ? movie.release_date.split('-')[0] 
-                                            : 'Date not specified'}
-                                    </MovieGenre>
-                                </MovieInfo>
-                            </MovieCard>
-                        ))
-                    ) : (
-                        <div>Films not found</div>
-                    )}
-                </MovieGrid>
+            {Array.isArray(movies) && movies.length === 0 ? (
+          <EmptyLibraryMessage>
+            The search didn't turn up any results!
+          </EmptyLibraryMessage>
+        ) : (
+          <MovieGrid>
+                   {localMovies.map(movie => (
+              <MovieCard 
+                key={movie.id}
+                movie={movie}
+                user={user}
+                onClick={() => handleMovieClick(movie)}
+              >
+                <MovieRating>★ {movie.vote_average.toFixed(1)}</MovieRating>
+                <MovieImage 
+                  src={movie.poster_path 
+                    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+                    : 'https://via.placeholder.com/500x750?text=No+Image'
+                  } 
+                  alt={movie.title} 
+                />
+                <MovieInfo>
+                  <MovieTitle>{movie.title}</MovieTitle>
+                  <MovieGenre>
+                    {movie.release_date 
+                      ? movie.release_date.split('-')[0] 
+                      : 'Date not specified'
+                    }
+                  </MovieGenre>
+                </MovieInfo>
+              </MovieCard>
+            ))}
+          </MovieGrid>
+        )}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
             </HomeContainer>
 
             {selectedMovie && (

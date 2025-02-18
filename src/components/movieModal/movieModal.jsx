@@ -13,6 +13,7 @@ const ModalOverlay = styled.div`
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  overflow-y: auto; /* Добавляем вертикальную прокрутку */
 `;
 
 const ModalContent = styled.div`
@@ -23,6 +24,8 @@ const ModalContent = styled.div`
   position: relative;
   color: white;
   overflow: hidden;
+  max-height: 90vh; /* Ограничиваем высоту контента */
+  overflow-y: auto; /* Добавляем вертикальную прокрутку */
 `;
 
 const CloseButton = styled.button`
@@ -35,7 +38,7 @@ const CloseButton = styled.button`
   font-size: 24px;
   cursor: pointer;
   z-index: 1;
-  
+
   &:hover {
     color: #ff6b08;
   }
@@ -45,7 +48,7 @@ const MovieDetails = styled.div`
   display: flex;
   padding: 20px;
   gap: 20px;
-  
+
   @media (max-width: 768px) {
     flex-direction: column;
   }
@@ -56,7 +59,7 @@ const MoviePoster = styled.img`
   height: 450px;
   object-fit: cover;
   border-radius: 4px;
-  
+
   @media (max-width: 768px) {
     width: 100%;
     height: auto;
@@ -84,7 +87,7 @@ const MovieRating = styled.div`
 
 const InfoRow = styled.div`
   margin-bottom: 15px;
-  
+
   span:first-child {
     color: #888;
     margin-right: 10px;
@@ -97,8 +100,8 @@ const Overview = styled.p`
 `;
 
 const MovieModal = ({ movie, onClose, user }) => {
-      console.log('Modal user:', user); // Отладочный лог
-  console.log('Modal movie:', movie); 
+  console.log('Modal user:', user); // Отладочный лог
+  console.log('Modal movie:', movie);
   if (!movie) return null;
 
   // Предотвращаем всплытие клика по контенту
@@ -122,36 +125,33 @@ const MovieModal = ({ movie, onClose, user }) => {
           <MovieInfo>
             <MovieTitle>{movie.title}</MovieTitle>
             <MovieRating>★ {movie.vote_average.toFixed(1)}</MovieRating>
-            
+
             <InfoRow>
               <span>Release Date:</span>
               <span>{movie.release_date}</span>
             </InfoRow>
-            
+
             <InfoRow>
               <span>Original Language:</span>
               <span>{movie.original_language.toUpperCase()}</span>
             </InfoRow>
-            
+
             <InfoRow>
               <span>Vote Count:</span>
               <span>{movie.vote_count}</span>
             </InfoRow>
-            
+
             <InfoRow>
               <span>Popularity:</span>
               <span>{movie.popularity.toFixed(1)}</span>
             </InfoRow>
-            
+
             <Overview>{movie.overview}</Overview>
 
-            <LibraryButtons 
-              movie={movie} 
+            <LibraryButtons
+              movie={movie}
               user={user}
-              onUpdate={() => {
-                // Можно добавить обновление UI здесь
-                console.log('Movie added to library');
-              }}
+              onUpdate={() => {}}
             />
           </MovieInfo>
         </MovieDetails>
@@ -161,4 +161,3 @@ const MovieModal = ({ movie, onClose, user }) => {
 };
 
 export default MovieModal;
-
