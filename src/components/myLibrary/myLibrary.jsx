@@ -164,7 +164,6 @@ const MyLibrary = ({ user, moviesLibr: librarySearchResults, isSearching }) => {
   const [error, setError] = useState(null);
 
   
-console.log("myLibrary",movies);
 
   useEffect(() => {
     let unsubscribe = null;
@@ -226,7 +225,6 @@ console.log("myLibrary",movies);
 
   useEffect(() => {
     if (librarySearchResults === null) {
-      // Если поиск не выполнялся или был очищен
       const finalFilteredMovies = filter === 'all' 
         ? movies 
         : movies.filter(movie => movie.type === filter);

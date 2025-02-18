@@ -16,7 +16,7 @@ function App() {
   const [libraryMovies, setLibraryMovies] = useState([]); 
   const [librarySearchResults, setLibrarySearchResults] = useState(null); 
   const location = useLocation();
-  const [isSearching, setIsSearching] = useState(false); // Добавляем состояние поиска
+  const [isSearching, setIsSearching] = useState(false); 
 
 
   useEffect(() => {

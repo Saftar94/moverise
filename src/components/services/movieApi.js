@@ -21,7 +21,6 @@ export const getPopularMovies = async (page = 1) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error fetching movies:', error);
     throw error;
   }
 };
@@ -34,7 +33,6 @@ export const searchMovies = async (query) => {
     });
     return response.data;
   } catch (error) {
-    console.error('Error searching movies:', error);
     throw error;
   }
 };
