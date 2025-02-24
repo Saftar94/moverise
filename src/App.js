@@ -7,7 +7,7 @@ import Login from './components/login/login';
 import MyLibrary from './components/myLibrary/myLibrary';
 import ProtectedRoute from './components/protectedRoute/protectedRoute.jsx';
 import { searchMovies } from './components/services/movieApi.js';
-
+import Footer from './components/footer/footer';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -17,7 +17,7 @@ function App() {
   const [librarySearchResults, setLibrarySearchResults] = useState(null); 
   const location = useLocation();
   const [isSearching, setIsSearching] = useState(false); 
-
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const auth = getAuth();
@@ -75,11 +75,11 @@ function App() {
 
   return (
     <>   
-      <Header user={user} onSearch={handleSearch} />
+      <Header user={user} onSearch={handleSearch} onSearchChange={setSearchQuery}  />
       <Routes>
         <Route 
           path="/" 
-          element={<Home user={user} movies={movies} />}
+          element={<Home user={user} movies={movies} onSearch={handleSearch} searchQuery={searchQuery}/>}
         />
         <Route 
           path="/login" 
@@ -94,6 +94,7 @@ function App() {
           } 
         />
       </Routes>
+      <Footer />
     </>
   );
 }

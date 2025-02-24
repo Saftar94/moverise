@@ -1,7 +1,7 @@
 import React from 'react';
-import styled from 'styled-components';
 import { doc, deleteDoc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
+import styled from 'styled-components';
 
 const StyledDeleteButton = styled.button`
   position: absolute;
@@ -25,7 +25,6 @@ const StyledDeleteButton = styled.button`
 `;
 
 const DeleteButton = ({ movieId, user, onDelete }) => {
-    
   const handleDelete = async () => {
     if (!user) return;
 
@@ -34,7 +33,7 @@ const DeleteButton = ({ movieId, user, onDelete }) => {
       await deleteDoc(movieRef);
       console.log('Movie deleted successfully');
       if (onDelete) {
-        onDelete(movieId);
+        onDelete(movieId, "delete"); // Call the callback function to update the local state
       }
     } catch (error) {
       console.error('Error deleting movie:', error);

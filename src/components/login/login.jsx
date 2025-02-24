@@ -127,9 +127,14 @@ const Login = () => {
       navigate 
     });
   };
-  const handleGoogleLoginClick = () => {
-    handleGoogleLogin({ setLoading, setMessage, navigate });
-  }
+  const handleGoogleLoginClick = async (e) => {
+    e.preventDefault();
+    await handleGoogleLogin({ 
+      setLoading, 
+      setMessage, 
+      navigate 
+    });
+  };
 
   return (
     <LoginContainer>

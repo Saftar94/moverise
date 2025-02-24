@@ -6,7 +6,7 @@
     "@react-icons/all-files": "^4.1.0",
     "axios": "^1.7.9",
     "cra-template": "1.2.0",
-    "firebase": "^11.3.0",
+    "firebase": "^11.3.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-firebase-hooks": "^5.1.1",
@@ -25,7 +25,6 @@
     "eject": "react-scripts eject",
     "predeoloy": "nmp run build",
     "deploy": "netlify deploy -p"
-
   },
   "eslintConfig": {
     "extends": [

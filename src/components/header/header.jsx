@@ -196,7 +196,7 @@ const LogoutButton = styled.button`
   }
 `;
 
-const Header = ({onSearch, libraryMovies}) => {
+const Header = ({onSearch, libraryMovies, onSearchChange}) => {
   const location = useLocation();
   const [user] = useAuthState(auth);
 
@@ -268,6 +268,7 @@ const Header = ({onSearch, libraryMovies}) => {
       <SearchBar 
         onSearch={onSearch}
         libraryMovies={libraryMovies}
+        onSearchChange={onSearchChange}
       />
 
     </HeaderContainer>

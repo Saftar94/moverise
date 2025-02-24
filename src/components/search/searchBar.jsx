@@ -61,7 +61,8 @@ const SearchInput = styled.input`
 
 
 
-const SearchBar = ({ onSearch, libraryMovies }) => {
+const SearchBar = ({ onSearch, libraryMovies, onSearchChange }) => {
+  
   const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
   const isLibraryPage = location.pathname === '/library';
@@ -71,9 +72,10 @@ const SearchBar = ({ onSearch, libraryMovies }) => {
     const query = e.target.value.trim();
     setSearchQuery(query);
     onSearch(query);
-  
+    onSearchChange(query);
     if (!query) {
       onSearch(null); // Если строка поиска пустая, сбрасываем результаты и показываем топовые фильмы
+      onSearchChange('');
       return;
     }
   

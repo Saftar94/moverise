@@ -1,6 +1,7 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
+import Toast from '../movieModal/toast';
 
 const ButtonContainer = styled.div`
   display: flex;
@@ -34,7 +35,7 @@ const Button = styled.button`
   font-weight: 500;
   font-size: 14px;
   transition: all 0.3s ease;
-  
+
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -54,7 +55,7 @@ const Button = styled.button`
 const WatchedButton = styled(Button)`
   background-color: rgb(255, 21, 21);
   color: white;
-  
+
   &:hover:not(:disabled) {
     background-color: rgb(255, 104, 172);
   }
@@ -63,7 +64,7 @@ const WatchedButton = styled(Button)`
 const FutureButton = styled(Button)`
   background-color: rgb(30, 208, 60);
   color: white;
-  
+
   &:hover:not(:disabled) {
     background-color: rgb(193, 193, 65);
   }
@@ -87,64 +88,69 @@ const Message = styled.div`
 `;
 
 const LibraryButtons = ({ movie, user, onUpdate }) => {
-    const [message, setMessage] = useState('');
-    const [messageType, setMessageType] = useState('');
-  
-    const addToLibrary = async (type) => {
-      if (!user) {
-        setMessage('Please login to add movies to your library');
-        setMessageType('error');
-        return;
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('');
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+
+  const addToLibrary = async (type) => {
+    if (!user) {
+      setMessage('Please login to add movies to your library');
+      setMessageType('error');
+      return;
+    }
+
+    try {
+      const db = getFirestore();
+      const movieRef = doc(db, 'users', user.uid, 'library', movie.id.toString());
+
+      await setDoc(movieRef, {
+        movieId: movie.id,
+        title: movie.title,
+        poster_path: movie.poster_path,
+        overview: movie.overview,
+        vote_average: movie.vote_average,
+        release_date: movie.release_date,
+        type: type,
+        addedAt: new Date().toISOString()
+      });
+
+      setMessage(`Successfully added to ${type} list!`);
+      setMessageType('success');
+      setToastMessage(`Successfully added to ${type} list!`);
+      setShowToast(true);
+
+      if (onUpdate) {
+        onUpdate(movie, "add");
       }
+    } catch (error) {
+      setMessage('Error adding movie to library');
+      setMessageType('error');
+      setToastMessage('Error adding movie to library');
+      setShowToast(true);
+    }
+  };
 
-  
-      try {
-        const db = getFirestore();
-        const movieRef = doc(db, 'users', user.uid, 'library', movie.id.toString());
-  
-        await setDoc(movieRef, {
-          movieId: movie.id,
-          title: movie.title,
-          poster_path: movie.poster_path,
-          overview: movie.overview,
-          vote_average: movie.vote_average,
-          release_date: movie.release_date,
-          type: type,
-          addedAt: new Date().toISOString()
-        });
-
-        await setDoc(movieRef, `setDoc`);
-
-        setMessage(`Successfully added to ${type} list!`);
-        setMessageType('success');
-        
-        if (onUpdate) {
-          onUpdate();
-        }
-      } catch (error) {
-        setMessage('Error adding movie to library');
-        setMessageType('error');
-      }
-    };
-    return (
-        <>
-          <ButtonContainer>
-            <WatchedButton 
-              onClick={() => addToLibrary('watched')}
-              disabled={!user}
-            >
-              Add to Watched
-            </WatchedButton>
-            <FutureButton 
-              onClick={() => addToLibrary('future')}
-              disabled={!user}
-            >
-              Add to Future
-            </FutureButton>
-          </ButtonContainer>
-          {message && <Message type={messageType}>{message}</Message>}
-        </>
-      );
+  return (
+    <>
+      <ButtonContainer>
+        <WatchedButton
+          onClick={() => addToLibrary('watched')}
+          disabled={!user}
+        >
+          Add to Watched
+        </WatchedButton>
+        <FutureButton
+          onClick={() => addToLibrary('future')}
+          disabled={!user}
+        >
+          Add to Future
+        </FutureButton>
+      </ButtonContainer>
+      {message && <Message type={messageType}>{message}</Message>}
+      {showToast && <Toast message={toastMessage} type={messageType} />}
+    </>
+  );
 };
 
 export default LibraryButtons;

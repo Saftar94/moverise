@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { db,  } from '../services/firebaseConfig';
+import { db } from '../services/firebaseConfig';
 import { collection, onSnapshot } from 'firebase/firestore';
 import DeleteButton from '../libararyButtons/DeleteButton';
 
@@ -40,8 +40,8 @@ const MovieCard = styled.div`
   position: relative;
   border-radius: 6px;
   overflow: hidden;
-  background-color: ${props => 
-    props.type === 'watched' ? 'rgba(255, 107, 107, 0.2)' : 
+  background-color: ${props =>
+    props.type === 'watched' ? 'rgba(255, 107, 107, 0.2)' :
     props.type === 'future' ? 'rgba(81, 207, 102, 0.2)' : 'transparent'};
 
   @media (min-width: 768px) {
@@ -156,15 +156,15 @@ const EmptyLibraryMessage = styled.div`
     height: 100px;
   }
 `;
+
 const MyLibrary = ({ user, moviesLibr: librarySearchResults, isSearching }) => {
-  const [movies, setMovies] = useState();
+  const [movies, setMovies] = useState([]);
   const [filteredMovies, setFilteredMovies] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   
-
   useEffect(() => {
     let unsubscribe = null;
 
@@ -180,25 +180,26 @@ const MyLibrary = ({ user, moviesLibr: librarySearchResults, isSearching }) => {
         setMovies(JSON.parse(cachedData));
         setLoading(false);
       }
-
       try {
         const libraryRef = collection(db, 'users', user.uid, 'library');
+        console.log('Fetching library data...');
 
-        unsubscribe = onSnapshot(
+         unsubscribe = onSnapshot(
           libraryRef,
           (snapshot) => {
             const moviesList = snapshot.docs.map(doc => ({
               id: doc.id,
               ...doc.data()
             }));
-            
+
             setMovies(moviesList);
             setLoading(false);
             setError(null);
-            
+
             localStorage.setItem(`userLibrary_${user.uid}`, JSON.stringify(moviesList));
           },
           (error) => {
+            console.error("Firestore onSnapshot error:", error);
             setError(error.message);
             setLoading(false);
 
@@ -209,6 +210,7 @@ const MyLibrary = ({ user, moviesLibr: librarySearchResults, isSearching }) => {
           }
         );
       } catch (error) {
+        console.error("Error fetching library data:", error);
         setError(error.message);
         setLoading(false);
       }
@@ -225,60 +227,57 @@ const MyLibrary = ({ user, moviesLibr: librarySearchResults, isSearching }) => {
 
   useEffect(() => {
     if (librarySearchResults === null) {
-      const finalFilteredMovies = filter === 'all' 
-        ? movies 
+      const finalFilteredMovies = filter === 'all'
+        ? movies
         : movies.filter(movie => movie.type === filter);
       setFilteredMovies(finalFilteredMovies);
     } else if (Array.isArray(librarySearchResults) && librarySearchResults.length === 0) {
       setFilteredMovies([]);
     } else {
-      const finalFilteredMovies = filter === 'all' 
-        ? librarySearchResults 
+      const finalFilteredMovies = filter === 'all'
+        ? librarySearchResults
         : librarySearchResults.filter(movie => movie.type === filter);
       setFilteredMovies(finalFilteredMovies);
     }
   }, [librarySearchResults, movies, filter]);
-  
+
   const handleMovieDelete = (movieId) => {
     setMovies(prevMovies => prevMovies.filter(movie => movie.id !== movieId));
+    
   };
-
 
   return (
     <LibraryContainer>
       <FilterButtons>
-        <FilterButton 
-          $active={filter === 'all'} 
+        <FilterButton
+          $active={filter === 'all'}
           onClick={() => setFilter('all')}
         >
           All Movies
         </FilterButton>
-        <FilterButton 
-          $active={filter === 'watched'} 
+        <FilterButton
+          $active={filter === 'watched'}
           onClick={() => setFilter('watched')}
         >
           Watched
         </FilterButton>
-        <FilterButton 
-          $active={filter === 'future'} 
+        <FilterButton
+          $active={filter === 'future'}
           onClick={() => setFilter('future')}
         >
           Watch Later
         </FilterButton>
       </FilterButtons>
 
-    
-
-  
       {loading ? (
         <EmptyLibraryMessage>Loading your library...</EmptyLibraryMessage>
       ) : error ? (
         <EmptyLibraryMessage>Error: {error}</EmptyLibraryMessage>
       ) : librarySearchResults.length === 0 ? (
         <EmptyLibraryMessage>
-          {isSearching  ?
-            `The search didn't turn up any results!` : 
-            'Your library is empty. Add some movies!'
+          {isSearching
+            ? `The search didn't turn up any results!`
+            : 'Your library is empty. Add some movies!'
           }
         </EmptyLibraryMessage>
       ) : (
@@ -286,18 +285,18 @@ const MyLibrary = ({ user, moviesLibr: librarySearchResults, isSearching }) => {
           <MovieGrid>
             {filteredMovies.map(movie => (
               <MovieCard key={movie.id} type={movie.type}>
-                <DeleteButton 
+                <DeleteButton
                   movieId={movie.id}
                   user={user}
                   onDelete={handleMovieDelete}
                 />
-                <MovieImage 
+                <MovieImage
                   src={
                     movie.poster_path
                       ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
                       : 'https://via.placeholder.com/500x750?text=No+Image'
-                  } 
-                  alt={movie.title} 
+                  }
+                  alt={movie.title}
                 />
                 <MovieInfo>
                   <MovieTitle>{movie.title}</MovieTitle>
@@ -312,4 +311,3 @@ const MyLibrary = ({ user, moviesLibr: librarySearchResults, isSearching }) => {
 };
 
 export default MyLibrary;
-

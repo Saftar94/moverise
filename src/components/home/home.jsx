@@ -94,7 +94,7 @@ export const EmptyLibraryMessage = styled.div`
   height: 100px;
 `;
 
-const Home = ({user, movies}) => {
+const Home = ({user, movies, searchQuery}) => {
   const [localMovies, setLocalMovies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -107,7 +107,6 @@ const Home = ({user, movies}) => {
     });
     const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -209,13 +208,15 @@ useEffect(() => {
   const fallbackImageUrl = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='750' viewBox='0 0 500 750'%3E%3Crect width='100%25' height='100%25' fill='%23333'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24' fill='%23666'%3ENo Image%3C/text%3E%3C/svg%3E";
   return (
     <>
-   <Hero />
-
+   {/* <Hero /> */}
+   {searchQuery === '' && <Hero />}
    <Sorting 
         onSortChange={handleSortChange}
         genres={genres}
       />
+ 
             <HomeContainer>
+              
             {Array.isArray(movies) && movies.length === 0 ? (
           <EmptyLibraryMessage>
             The search didn't turn up any results!
